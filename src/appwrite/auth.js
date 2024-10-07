@@ -5,91 +5,63 @@ import conf from "../conf/conf";
 import { Client, Account, ID } from "appwrite";
 
 // Defining a class for authentication services
-export class AuthenticationService {
-  // Initializing the Appwrite client
+export class AuthService {
   client = new Client();
-
-  // Initializing the account object
   account;
 
-  // Constructor function to set up the client and account
   constructor() {
-    // Setting the endpoint and project ID for the Appwrite client
     this.client
       .setEndpoint(conf.appwriteurl)
       .setProject(conf.appwriteprojectId);
-
-    // Creating a new account object using the client
     this.account = new Account(this.client);
   }
 
-  // Method to sign up a new user
-  async signup({ email, password, name }) {
+  async createAccount({ email, password, name }) {
     try {
-      // Creating a new user with a unique ID, email, password, and name
-      const user = await this.account.create(
+      const userAccount = await this.account.create(
         ID.unique(),
         email,
         password,
         name
       );
-
-      // If the user is created successfully, log them in
-      if (user) {
+      if (userAccount) {
+        // call another method
         return this.login({ email, password });
       } else {
-        // Return the user object if creation fails
-        return user;
+        return userAccount;
       }
-    } catch (e) {
-      // Log any errors that occur during sign up
-      console.log(e);
+    } catch (error) {
+      throw error;
     }
   }
 
-  // Method to log in an existing user
   async login({ email, password }) {
     try {
-      // Creating a new session for the user
-      const user = await this.account.createSession(email, password);
-
-      // Return the user object if login is successful
-      if (user) {
-        return user;
-      }
-    } catch (e) {
-      // Log any errors that occur during login
-      console.log(e);
+      return await this.account.createSession(email, password);
+    } catch (error) {
+      throw error;
     }
-    // Return null if login fails
+  }
+
+  async getCurrentUser() {
+    try {
+      return await this.account.get();
+    } catch (error) {
+      console.log("Appwrite serive :: getCurrentUser :: error", error);
+    }
+
     return null;
   }
 
-  // Method to log out the current user
   async logout() {
     try {
-      // Deleting all sessions for the current user
-      return await this.account.deleteSessions();
-    } catch (e) {
-      // Log any errors that occur during logout
-      console.log(e);
-    }
-  }
-
-  // Method to check if a user is authenticated
-  async checkauthuser() {
-    try {
-      // Getting the current user object
-      return await this.account.get();
-    } catch (e) {
-      // Log any errors that occur during authentication check
-      console.log(e);
+      await this.account.deleteSessions();
+    } catch (error) {
+      console.log("Appwrite serive :: logout :: error", error);
     }
   }
 }
 
-// Creating a new instance of the AuthenticationService class
-const authenticationservice = new AuthenticationService();
+const authService = new AuthService();
 
-// Exporting the authentication service instance
-export default authenticationservice;
+export default authService;
