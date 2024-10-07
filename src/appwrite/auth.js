@@ -48,7 +48,7 @@ export class AuthenticationService {
   }
 
   // Method to log in an existing user
-  async login(email, password) {
+  async login({ email, password }) {
     try {
       // Creating a new session for the user
       const user = await this.account.createSession(email, password);
